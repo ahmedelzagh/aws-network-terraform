@@ -15,11 +15,12 @@ ami = "ami-04cdc91e49cb06165"
 # Security Groups
 security_groups = {
   public_instance_sg = {
-    description = "Public EC2 instance security group"
-    ingress_ports = [80, 443, 22]
+    description = "Public instance security group"
+    ingress_ports = [22, 80, 443]
   }
   private_instance_sg = {
-    description = "Private EC2 instance security group"
-    ingress_ports = [80, 443]
+    description = "Private instance security group"
+    ingress_ports = [22]
   }
 }
+
