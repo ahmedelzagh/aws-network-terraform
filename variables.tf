@@ -1,43 +1,53 @@
+# Region and Availability Zones
 variable "region" {
-  default = "eu-north-1"
+  description = "AWS region where the resources will be deployed"
 }
 
-variable "availability_zone" {
-  description = "The availability zone for subnets"
-  default     = "eu-north-1a"
+variable "availability_zones" {
+  description = "List of availability zones to deploy resources"
+  type        = list(string)
 }
 
+# VPC and Subnets
 variable "vpc_cidr" {
-  default = "10.0.0.0/16"
+  description = "CIDR block for the VPC"
 }
 
 variable "public_subnet_cidr" {
-  default = "10.0.1.0/24"
+  description = "CIDR block for the public subnet"
 }
 
 variable "private_subnet_cidr" {
-  default = "10.0.2.0/24"
+  description = "CIDR block for the private subnet"
 }
 
-variable "key_name" {
-  description = "Main Key Pair Name"
-}
-
-variable "instance_type" {
-  default = "t2.micro"
-}
-
-variable "ami" {
-  description = "AMI ID for EC2 instances"
-  default     = "ami-0a0e5d9c7acc336f1"
-}
-
+# S3 Bucket and DynamoDB Table for Backend
 variable "s3_bucket_name" {
-  description = "S3 bucket for Terraform state"
-  default     = "ahmedelzagh-state-bucket"
+  description = "S3 bucket for Terraform state storage"
 }
 
 variable "dynamodb_table_name" {
   description = "DynamoDB table for state locking"
-  default     = "terraform-state-locks"
+}
+
+# EC2 Settings
+variable "key_name" {
+  description = "Key pair for EC2 instances"
+}
+
+variable "instance_type" {
+  description = "EC2 instance type"
+}
+
+variable "ami" {
+  description = "AMI ID for EC2 instances"
+}
+
+# Security Groups
+variable "security_groups" {
+  description = "Map of security groups with ingress rules"
+  type        = map(object({
+    description   = string
+    ingress_ports = list(number)
+  }))
 }

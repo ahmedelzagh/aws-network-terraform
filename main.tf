@@ -15,7 +15,8 @@ resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.main_vpc.id
   cidr_block              = var.public_subnet_cidr
   map_public_ip_on_launch = true
-  availability_zone       = var.availability_zone
+  availability_zone       = var.availability_zones[0]  # Use first AZ
+
   tags = {
     Name = "PublicSubnet"
   }
@@ -25,7 +26,7 @@ resource "aws_subnet" "public_subnet" {
 resource "aws_subnet" "private_subnet" {
   vpc_id            = aws_vpc.main_vpc.id
   cidr_block        = var.private_subnet_cidr
-  availability_zone = var.availability_zone
+  availability_zone = var.availability_zones[1]  # Use second AZ
   tags = {
     Name = "PrivateSubnet"
   }
@@ -76,73 +77,61 @@ resource "aws_route_table_association" "private_rt_association" {
   route_table_id = aws_route_table.private_rt.id
 }
 
-# Create Security Group for Public EC2
-resource "aws_security_group" "public_sg" {
-  vpc_id = aws_vpc.main_vpc.id
+# Create Security Groups for public and private instances
+resource "aws_security_group" "instance_sgs" {
+  for_each = var.security_groups
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+  name        = each.key
+  description = each.value.description
+  vpc_id      = aws_vpc.main_vpc.id
+
+  # Create ingress rules dynamically based on provided ports
+  dynamic "ingress" {
+    for_each = each.value.ingress_ports
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
   }
 
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
+  # Egress rule: allow all traffic out
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-}
 
-# Create Security Group for Private EC2
-resource "aws_security_group" "private_sg" {
-  vpc_id = aws_vpc.main_vpc.id
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+  tags = {
+    Name = each.key
   }
 }
 
 # Create Public EC2 Instance
 resource "aws_instance" "public_instance" {
-  ami           = var.ami
-  instance_type = var.instance_type
-  key_name      = var.key_name
-  subnet_id     = aws_subnet.public_subnet.id
-  security_groups = [aws_security_group.public_sg.name]
+  ami                    = var.ami
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.public_subnet.id
+  security_groups        = [aws_security_group.instance_sgs["public_instance_sg"].name]
+  key_name               = var.key_name
+  associate_public_ip_address = true
 
   tags = {
-    Name = "PublicInstance"
+    Name = "Public EC2 Instance"
   }
 }
 
 # Create Private EC2 Instance
 resource "aws_instance" "private_instance" {
-  ami           = var.ami
-  instance_type = var.instance_type
-  key_name      = var.key_name
-  subnet_id     = aws_subnet.private_subnet.id
-  security_groups = [aws_security_group.private_sg.name]
+  ami                    = var.ami
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.private_subnet.id
+  security_groups        = [aws_security_group.instance_sgs["private_instance_sg"].name]
+  key_name               = var.key_name
 
   tags = {
-    Name = "PrivateInstance"
+    Name = "Private EC2 Instance"
   }
 }
