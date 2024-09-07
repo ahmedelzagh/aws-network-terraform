@@ -21,15 +21,6 @@ variable "private_subnet_cidr" {
   description = "CIDR block for the private subnet"
 }
 
-# S3 Bucket and DynamoDB Table for Backend
-variable "s3_bucket_name" {
-  description = "S3 bucket for Terraform state storage"
-}
-
-variable "dynamodb_table_name" {
-  description = "DynamoDB table for state locking"
-}
-
 # EC2 Settings
 variable "key_name" {
   description = "Key pair for EC2 instances"

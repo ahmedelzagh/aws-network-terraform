@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "statebucket" {
-  bucket = var.s3_bucket_name
+  bucket = "ahmedelzagh-state-bucket"
 
   tags = {
     Name = "state bucket"
@@ -14,7 +14,7 @@ resource "aws_s3_bucket_versioning" "terraform_state_bucket" {
 }
 
 resource "aws_dynamodb_table" "terraform_locks" {
-  name           = var.dynamodb_table_name
+  name           = "terraform-state-locks"
   billing_mode   = "PROVISIONED"
   read_capacity  = 1
   write_capacity = 1
@@ -32,9 +32,9 @@ resource "aws_dynamodb_table" "terraform_locks" {
 
 terraform {
   backend "s3" {
-    bucket         = var.s3_bucket_name
+    bucket         = "ahmedelzagh-state-bucket"
     key            = "terraform.tfstate"
-    dynamodb_table = var.dynamodb_table_name
-    region         = var.region
+    dynamodb_table = "terraform-state-locks"
+    region         = "eu-north-1"
   }
 }
