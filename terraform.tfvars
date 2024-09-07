@@ -9,8 +9,8 @@ private_subnet_cidr = "10.0.2.0/24"
 
 # EC2 Settings
 key_name = "main-key-pair"
-instance_type = "t2.micro"
-ami = "ami-0a0e5d9c7acc336f1"
+instance_type = "t3.micro"
+ami = "ami-04cdc91e49cb06165"
 
 # Security Groups
 security_groups = {
